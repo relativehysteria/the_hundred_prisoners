@@ -1,3 +1,5 @@
+#![allow(unreachable_code)]
+#![allow(dead_code)]
 use core::arch::x86_64::_rdtsc;
 
 mod xorshift;
@@ -9,8 +11,6 @@ const NUM_PRISONERS: usize = 100;
 /// Number of attempts to find the prisoners number
 const NUM_ATTEMPTS: usize = 50;
 
-#[allow(unreachable_code)]
-#[allow(dead_code)]
 fn main() {
     attempt(42988879486144);
     std::process::exit(0);

@@ -1,0 +1,4 @@
+[package]
+name = "the_hundred_prisoners"
+version = "0.1.0"
+edition = "2021"

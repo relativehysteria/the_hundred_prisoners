@@ -1,6 +1,8 @@
 #![allow(unreachable_code)]
 #![allow(dead_code)]
+#![allow(unused_variables)]
 use core::arch::x86_64::_rdtsc;
+use std::thread::available_parallelism;
 
 mod xorshift;
 use xorshift::Rng;
@@ -15,9 +17,9 @@ fn main() {
     attempt(42988879486144);
     std::process::exit(0);
 
-    search_for_valid_seeds();
+    parallel_search(search_for_valid_seeds);
 
-    search_for_interesting_seeds();
+    parallel_search(search_for_interesting_seeds);
 }
 
 #[derive(Debug)]
@@ -25,6 +27,29 @@ enum SearchResult {
     Found(usize),
     NotFound,
     Looped,
+}
+
+/// Search for seeds in parallel. `search_function` is any of the `search_for*`
+/// functions defined in here.
+fn parallel_search(search_function: fn() -> !) -> ! {
+    // Get the amount of available cpus
+    let cpus = match available_parallelism() {
+        Err(_) => 1,
+        Ok(n)  => usize::from(n),
+    };
+
+    // Spawn the threads and run the task.
+    // We omit one cpu and leave it to the main thread.
+    let mut threads = Vec::with_capacity(cpus);
+    for _ in 0..(cpus-1) {
+        let thread = std::thread::spawn(move || {
+            search_function();
+        });
+        threads.push(thread);
+    }
+
+    // Run the task on the main thread as well
+    search_function();
 }
 
 /// Attempt to solve the riddle given a certain seed.

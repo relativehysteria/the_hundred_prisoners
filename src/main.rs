@@ -22,13 +22,6 @@ fn main() {
     parallel_search(search_for_interesting_seeds);
 }
 
-#[derive(Debug)]
-enum SearchResult {
-    Found(usize),
-    NotFound,
-    Looped,
-}
-
 /// Search for seeds in parallel. `search_function` is any of the `search_for*`
 /// functions defined in here.
 fn parallel_search(search_function: fn() -> !) -> ! {
@@ -92,7 +85,7 @@ fn search_for_valid_seeds() -> ! {
         // their number, this is an invalid seed.
         for i in 0..NUM_PRISONERS {
             match search_number(&boxes, i, NUM_ATTEMPTS) {
-                SearchResult::NotFound | SearchResult::Looped => {
+                SearchResult::NotFound => {
                     #[cfg(debug_assertions)]
                     println!("{seed}: Invalid attempt.");
                     continue 'main;
@@ -117,10 +110,10 @@ fn search_for_interesting_seeds() -> ! {
         reinitalize_shuffle(&mut boxes, seed);
 
         // The number of attempts we are looking for.
-        // If we get a `NotFound` or `Looped` on our first attempt,
-        // this result is already uninteresting for us.
+        // If we get a `NotFound` on our first attempt, this result is already
+        // uninteresting to us.
         let found_attempt = match search_number(&boxes, 0, NUM_ATTEMPTS) {
-            SearchResult::NotFound | SearchResult::Looped => {
+            SearchResult::NotFound => {
                 #[cfg(debug_assertions)]
                 println!("{seed}: Uninteresting first attempt.");
                 continue 'main;
@@ -133,7 +126,7 @@ fn search_for_interesting_seeds() -> ! {
         // a different amount of attempts, that is uninteresting..
         for i in 1..NUM_PRISONERS {
             match search_number(&boxes, i, NUM_ATTEMPTS) {
-                SearchResult::NotFound | SearchResult::Looped => {
+                SearchResult::NotFound => {
                     #[cfg(debug_assertions)]
                     println!("{seed}: Uninteresting attempt {i}.");
                     continue 'main;
@@ -151,29 +144,32 @@ fn search_for_interesting_seeds() -> ! {
     }
 }
 
+#[derive(Debug)]
+enum SearchResult {
+    Found(usize),
+    NotFound,
+}
+
 /// Searches for a number given the Miltersen looping algorithm.
 ///
 /// `boxes` are the boxes to loop through. `num` is the number we are looking
 /// for. `n_attempts` is the number of attempts we make.
 fn search_number(boxes: &[usize], num: usize, n_attempts: usize)
         -> SearchResult {
-    // This is our first attempt to find the number
+    // This is our first attempt to find the number.
     let mut next_num = boxes[num];
-    let first_num = next_num;
+    if next_num == num {
+        return SearchResult::Found(1usize);
+    }
 
     // This is the rest of the attempts
-    for attempt in 0..(n_attempts) {
-        // We found the number we are looking for
-        if next_num == num {
-            return SearchResult::Found(attempt+1);
-        }
-
+    for attempt in 2..=n_attempts {
         // Go to the next number
         next_num = boxes[next_num];
 
-        // We got back to our first attempt but didn't find our number
-        if next_num == first_num {
-            return SearchResult::Looped;
+        // We found the number we are looking for
+        if next_num == num {
+            return SearchResult::Found(attempt);
         }
     }
 

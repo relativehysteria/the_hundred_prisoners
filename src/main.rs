@@ -11,7 +11,7 @@ use xorshift::Rng;
 const NUM_PRISONERS: usize = 100;
 
 /// Number of attempts to find the prisoners number
-const NUM_ATTEMPTS: usize = 50;
+const NUM_ATTEMPTS: usize = NUM_PRISONERS / 2;
 
 fn main() {
     attempt(42988879486144);

@@ -55,11 +55,9 @@ fn parallel_search(search_function: fn() -> !) -> ! {
 
 /// Attempt to solve the riddle given a certain seed.
 fn attempt(seed: u64) {
-    let mut rng = Rng::new(seed);
-
     // Create the boxes and randomize them
-    let mut boxes = (0..NUM_PRISONERS).collect::<Vec<usize>>();
-    rng.shuffle(&mut boxes);
+    let mut boxes = [0usize; NUM_PRISONERS];
+    reinitalize_shuffle(&mut boxes, seed);
 
     // Let the prisoners search for their numbers
     println!("{boxes:#?}");
@@ -68,19 +66,27 @@ fn attempt(seed: u64) {
     }
 }
 
+/// Reinitialize and shuffle the `boxes`.
+fn reinitalize_shuffle(boxes: &mut [usize], seed: u64) {
+    // Create the rng
+    let mut rng = Rng::new(seed);
+
+    // Initialize the boxes
+    for i in 0..NUM_PRISONERS {
+        boxes[i] = i;
+    }
+
+    // Shuffle them
+    rng.shuffle(boxes);
+}
+
 /// Looks for seeds where each prisoner finds their number.
 fn search_for_valid_seeds() -> ! {
     let mut boxes = [0usize; NUM_PRISONERS];
     'main: loop {
-        // Create the RNG
+        // Initialize the boxes
         let seed = unsafe { _rdtsc() };
-        let mut rng = Rng::new(seed);
-
-        // Reinitialize the boxes
-        for i in 0..NUM_PRISONERS {
-            boxes[i] = i;
-        }
-        rng.shuffle(&mut boxes);
+        reinitalize_shuffle(&mut boxes, seed);
 
         // Search for the prisoners' numbers. If one of them loops or can't find
         // their number, this is an invalid seed.
@@ -106,15 +112,9 @@ fn search_for_valid_seeds() -> ! {
 fn search_for_interesting_seeds() -> ! {
     let mut boxes = [0usize; NUM_PRISONERS];
     'main: loop {
-        // Create the RNG
+        // Initialize the boxes
         let seed = unsafe { _rdtsc() };
-        let mut rng = Rng::new(seed);
-
-        // Create and randomize the boxes
-        for i in 0..NUM_PRISONERS {
-            boxes[i] = i;
-        }
-        rng.shuffle(&mut boxes);
+        reinitalize_shuffle(&mut boxes, seed);
 
         // The number of attempts we are looking for.
         // If we get a `NotFound` or `Looped` on our first attempt,

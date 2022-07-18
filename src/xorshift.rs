@@ -16,13 +16,13 @@ impl Rng {
     }
 
     /// Shuffle a vector in place
-    pub fn shuffle(&mut self, vector: &mut Vec<usize>) {
-        let n_shuffles = vector.len();
+    pub fn shuffle(&mut self, arr: &mut [usize]) {
+        let n_shuffles = arr.len();
         for i in 0..n_shuffles {
             let random_idx: usize = self.rand() as usize % n_shuffles;
-            let temp = vector[i];
-            vector[i] = vector[random_idx];
-            vector[random_idx] = temp;
+            let temp = arr[i];
+            arr[i] = arr[random_idx];
+            arr[random_idx] = temp;
         }
     }
 }

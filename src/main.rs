@@ -49,6 +49,7 @@ fn parallel_search(search_function: fn() -> !) -> ! {
     }
 
     // Run the task on the main thread as well
+    // We never have to join the threads because they won't finish anyway
     search_function();
 }
 
@@ -69,13 +70,16 @@ fn attempt(seed: u64) {
 
 /// Looks for seeds where each prisoner finds their number.
 fn search_for_valid_seeds() -> ! {
+    let mut boxes = [0usize; NUM_PRISONERS];
     'main: loop {
         // Create the RNG
         let seed = unsafe { _rdtsc() };
         let mut rng = Rng::new(seed);
 
-        // Create and randomize the boxes
-        let mut boxes = (0..NUM_PRISONERS).collect::<Vec<usize>>();
+        // Reinitialize the boxes
+        for i in 0..NUM_PRISONERS {
+            boxes[i] = i;
+        }
         rng.shuffle(&mut boxes);
 
         // Search for the prisoners' numbers. If one of them loops or can't find
@@ -100,13 +104,16 @@ fn search_for_valid_seeds() -> ! {
 /// "Interesting results" mean that all prisoners take exactly the same amount
 /// of attempts to find their corresponding numbers.
 fn search_for_interesting_seeds() -> ! {
+    let mut boxes = [0usize; NUM_PRISONERS];
     'main: loop {
         // Create the RNG
         let seed = unsafe { _rdtsc() };
         let mut rng = Rng::new(seed);
 
         // Create and randomize the boxes
-        let mut boxes = (0..NUM_PRISONERS).collect::<Vec<usize>>();
+        for i in 0..NUM_PRISONERS {
+            boxes[i] = i;
+        }
         rng.shuffle(&mut boxes);
 
         // The number of attempts we are looking for.
@@ -148,7 +155,7 @@ fn search_for_interesting_seeds() -> ! {
 ///
 /// `boxes` are the boxes to loop through. `num` is the number we are looking
 /// for. `n_attempts` is the number of attempts we make.
-fn search_number(boxes: &Vec<usize>, num: usize, n_attempts: usize)
+fn search_number(boxes: &[usize], num: usize, n_attempts: usize)
         -> SearchResult {
     // This is our first attempt to find the number
     let mut next_num = boxes[num];

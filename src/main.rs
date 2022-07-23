@@ -156,14 +156,8 @@ enum SearchResult {
 /// for. `n_attempts` is the number of attempts we make.
 fn search_number(boxes: &[usize], num: usize, n_attempts: usize)
         -> SearchResult {
-    // This is our first attempt to find the number.
-    let mut next_num = boxes[num];
-    if next_num == num {
-        return SearchResult::Found(1usize);
-    }
-
-    // This is the rest of the attempts
-    for attempt in 2..=n_attempts {
+    let mut next_num = num;
+    for attempt in 1..=n_attempts {
         // Go to the next number
         next_num = boxes[next_num];
 
